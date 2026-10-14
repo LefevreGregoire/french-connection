@@ -2,6 +2,7 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 using Nexus.Application.Abstractions;
 using Nexus.Domain.Models;
+using DomainNode = Nexus.Domain.Models.ContainerNode;
 
 namespace Nexus.Infrastructure.Docker;
 
@@ -19,7 +20,7 @@ public sealed class LocalDockerRuntime : IContainerRuntime, IDisposable
         _client = new DockerClientConfiguration(new Uri(socketUri ?? defaultUri)).CreateClient();
     }
 
-    public async Task<IReadOnlyList<ContainerNode>> GetContainersSnapshotAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<DomainNode>> GetContainersSnapshotAsync(CancellationToken ct = default)
     {
         var containers = await _client.Containers.ListContainersAsync(
             new ContainersListParameters { All = true }, ct);
@@ -58,17 +59,17 @@ public sealed class LocalDockerRuntime : IContainerRuntime, IDisposable
         await _client.System.MonitorEventsAsync(parameters, progress, ct);
     }
 
-    private static ContainerNode MapToDomain(ContainerListResponse c)
+    private static DomainNode MapToDomain(ContainerListResponse c)
     {
         var cleanName = c.Names.FirstOrDefault()?.TrimStart('/') ?? c.ID[..12];
         var networks = c.NetworkSettings?.Networks?.Keys.ToList() ?? [];
 
-        return new ContainerNode(
+        return new DomainNode(
             Id: c.ID[..12],
             Name: cleanName,
             Image: c.Image,
             RawState: c.State,
-            AlertLevel: ContainerNode.ComputeAlertLevel(c.State),
+            AlertLevel: DomainNode.ComputeAlertLevel(c.State),
             Networks: networks
         );
     }

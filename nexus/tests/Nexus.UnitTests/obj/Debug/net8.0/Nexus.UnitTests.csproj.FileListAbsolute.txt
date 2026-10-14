@@ -108,3 +108,7 @@ C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\obj\Debug\net8.0\
 C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\obj\Debug\net8.0\Nexus.UnitTests.pdb
 C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\obj\Debug\net8.0\Nexus.UnitTests.genruntimeconfig.cache
 C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\obj\Debug\net8.0\ref\Nexus.UnitTests.dll
+C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\obj\Debug\net8.0\Nexus.UnitTests.sourcelink.json
+C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\bin\Debug\net8.0\Docker.DotNet.dll
+C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\bin\Debug\net8.0\Nexus.Infrastructure.dll
+C:\Users\u245595\french-connection\nexus\tests\Nexus.UnitTests\bin\Debug\net8.0\Nexus.Infrastructure.pdb

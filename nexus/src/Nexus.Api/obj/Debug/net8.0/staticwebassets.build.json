@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "aChCb+EjG53TvLOB9eFeiiGyemhGdDRiwiaV8e8dy/g=",
+  "Source": "Nexus.Api",
+  "BasePath": "_content/Nexus.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

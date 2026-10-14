@@ -3,3 +3,5 @@
 atlas/node_modules/
 atlas/dist/
 .env
+start.cmd  
+start.ps1

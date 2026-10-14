@@ -9,3 +9,4 @@ C:\Users\u245595\french-connection\nexus\src\Nexus.Domain\obj\Debug\net8.0\Nexus
 C:\Users\u245595\french-connection\nexus\src\Nexus.Domain\obj\Debug\net8.0\refint\Nexus.Domain.dll
 C:\Users\u245595\french-connection\nexus\src\Nexus.Domain\obj\Debug\net8.0\Nexus.Domain.pdb
 C:\Users\u245595\french-connection\nexus\src\Nexus.Domain\obj\Debug\net8.0\ref\Nexus.Domain.dll
+C:\Users\u245595\french-connection\nexus\src\Nexus.Domain\obj\Debug\net8.0\Nexus.Domain.sourcelink.json

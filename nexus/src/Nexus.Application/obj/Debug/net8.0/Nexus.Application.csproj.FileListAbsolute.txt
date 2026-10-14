@@ -13,3 +13,4 @@ C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\
 C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\refint\Nexus.Application.dll
 C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.pdb
 C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\ref\Nexus.Application.dll
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.sourcelink.json
