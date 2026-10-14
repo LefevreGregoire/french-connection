@@ -1,0 +1,5 @@
+
+# Atlas (Frontend)
+atlas/node_modules/
+atlas/dist/
+.env

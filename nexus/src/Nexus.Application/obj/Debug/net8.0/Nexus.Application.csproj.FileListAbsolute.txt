@@ -1,0 +1,15 @@
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\bin\Debug\net8.0\Nexus.Application.deps.json
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\bin\Debug\net8.0\Nexus.Application.dll
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\bin\Debug\net8.0\Nexus.Application.pdb
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\bin\Debug\net8.0\Nexus.Domain.dll
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\bin\Debug\net8.0\Nexus.Domain.pdb
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.csproj.AssemblyReference.cache
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.AssemblyInfoInputs.cache
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.AssemblyInfo.cs
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.csproj.CoreCompileInputs.cache
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Ap.EDFDCF09.Up2Date
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.dll
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\refint\Nexus.Application.dll
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\Nexus.Application.pdb
+C:\Users\u245595\french-connection\nexus\src\Nexus.Application\obj\Debug\net8.0\ref\Nexus.Application.dll
