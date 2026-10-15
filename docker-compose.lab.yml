@@ -1,0 +1,63 @@
+name: french-connection-lab
+
+services:
+  nginx-proxy-mgr:
+    image: nginx:alpine
+    container_name: nginx-proxy-mgr
+    restart: unless-stopped
+    networks:
+      - dmz
+      - lan-backend
+
+  waf-crowdsec:
+    image: alpine:latest
+    container_name: waf-crowdsec
+    command: ["sh", "-c", "while true; do echo '[INFO] CrowdSec LAPI heartbeat OK'; sleep 10; done"]
+    restart: unless-stopped
+    networks:
+      - dmz
+
+  core-api-dotnet:
+    image: alpine:latest
+    container_name: core-api-dotnet
+    command: ["sh", "-c", "while true; do echo '[INF] SignalR Hub active'; sleep 8; done"]
+    restart: unless-stopped
+    networks:
+      - lan-backend
+      - lan-data
+
+  postgres-primary:
+    image: postgres:16-alpine
+    container_name: postgres-primary
+    environment:
+      POSTGRES_PASSWORD: labpassword
+    restart: unless-stopped
+    networks:
+      - lan-data
+
+  redis-session:
+    image: redis:7-alpine
+    container_name: redis-session
+    restart: unless-stopped
+    networks:
+      - lan-data
+
+  legacy-worker:
+    image: alpine:latest
+    container_name: legacy-worker
+    # S'arrête volontairement après 2 secondes pour apparaître en ROUGE (Exited) dans Atlas !
+    command: ["sh", "-c", "echo '[FATAL] Container exited with code 137'; exit 137"]
+    restart: "no"
+    networks:
+      - lan-backend
+
+networks:
+  dmz:
+    name: dmz
+    driver: bridge
+  lan-backend:
+    name: lan-backend
+    driver: bridge
+  lan-data:
+    name: lan-data
+    driver: bridge
