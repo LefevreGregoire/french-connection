@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import {
   OrthographicCamera,
@@ -8,18 +8,60 @@ import {
   Html,
   ContactShadows,
   Edges,
+  RoundedBox,
 } from '@react-three/drei';
 import * as THREE from 'three';
 import { useTopologyStore, VisualAlertLevel, type ContainerNode } from '../store/useTopologyStore';
 import { ContainerCube } from './ContainerCube';
 import { SubnetPlatform } from './SubnetPlatform';
+import { McpSpotRobot } from './McpSpotRobot';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 
+export type CameraPreset = 'iso' | 'top' | 'spot';
+
 const SUBNET_ZONES: Record<string, { centerX: number; color: string }> = {
-  'dmz':         { centerX: -7.8, color: '#f59e0b' }, // Ambre Douane / DMZ
-  'lan-backend': { centerX: 0,    color: '#0284c7' }, // Bleu Applicatif
-  'lan-data':    { centerX: 7.8,  color: '#0d9488' }, // Émeraude Stockage
+  'dmz':         { centerX: -7.8, color: '#f59e0b' },
+  'lan-backend': { centerX: 0,    color: '#0284c7' },
+  'lan-data':    { centerX: 7.8,  color: '#0d9488' },
 };
+
+// Contrôleur fluide de transition de caméra entre les vues ISO, TOP-DOWN 2D et FOLLOW SPOT
+function CameraRig({
+  preset,
+  spotPosition,
+}: {
+  preset: CameraPreset;
+  spotPosition: React.MutableRefObject<THREE.Vector3>;
+}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const controlsRef = useRef<any>(null);
+
+  useFrame((state, delta) => {
+    if (!controlsRef.current) return;
+
+    if (preset === 'top') {
+      state.camera.position.lerp(new THREE.Vector3(0, 38, 0.01), delta * 4);
+      controlsRef.current.target.lerp(new THREE.Vector3(0, 0, 0), delta * 4);
+    } else if (preset === 'spot') {
+      const p = spotPosition.current;
+      state.camera.position.lerp(new THREE.Vector3(p.x + 14, 16, p.z + 14), delta * 4);
+      controlsRef.current.target.lerp(new THREE.Vector3(p.x, 0.5, p.z), delta * 6);
+    }
+    controlsRef.current.update();
+  });
+
+  return (
+    <MapControls
+      ref={controlsRef}
+      enableDamping
+      dampingFactor={0.05}
+      minZoom={18}
+      maxZoom={95}
+      maxPolarAngle={preset === 'top' ? 0.05 : Math.PI / 2.35}
+      minPolarAngle={preset === 'top' ? 0 : Math.PI / 6}
+    />
+  );
+}
 
 function ParabolicTrafficArc({
   start,
@@ -35,7 +77,7 @@ function ParabolicTrafficArc({
   const packetRef = useRef<THREE.Mesh>(null!);
 
   const mid: [number, number, number] = useMemo(
-    () => [(start[0] + end[0]) / 2, 2.8, (start[2] + end[2]) / 2],
+    () => [(start[0] + end[0]) / 2, 2.65, (start[2] + end[2]) / 2],
     [start, end]
   );
 
@@ -51,7 +93,7 @@ function ParabolicTrafficArc({
 
   useFrame((state) => {
     if (!packetRef.current || isCritical) return;
-    const t = (state.clock.elapsedTime * 0.4 + speedOffset) % 1;
+    const t = (state.clock.elapsedTime * 0.38 + speedOffset) % 1;
     const pos = curve.getPoint(t);
     packetRef.current.position.copy(pos);
   });
@@ -65,15 +107,15 @@ function ParabolicTrafficArc({
         end={end}
         mid={mid}
         color={color}
-        lineWidth={isCritical ? 1.8 : 2}
+        lineWidth={isCritical ? 1.6 : 1.4}
         dashed
-        dashScale={7}
-        dashSize={0.35}
+        dashScale={8}
+        dashSize={0.3}
         gapSize={0.22}
       />
       {!isCritical && (
         <mesh ref={packetRef}>
-          <sphereGeometry args={[0.11, 16, 16]} />
+          <sphereGeometry args={[0.085, 16, 16]} />
           <meshBasicMaterial color="#0284c7" />
         </mesh>
       )}
@@ -81,141 +123,73 @@ function ParabolicTrafficArc({
   );
 }
 
-// Porte-Conteneurs en plein jour (Coque bleu marine, château blanc, conteneurs colorés)
-function WanCargoVessel({ position }: { position: [number, number, number] }) {
+function WanCargoVessel({ position, showAllLabels }: { position: [number, number, number]; showAllLabels: boolean }) {
   const shipRef = useRef<THREE.Group>(null!);
+  const [hovered, setHovered] = useState(false);
 
   useFrame((state) => {
     if (shipRef.current) {
-      shipRef.current.position.y = Math.sin(state.clock.elapsedTime * 1.4) * 0.05;
+      shipRef.current.position.y = Math.sin(state.clock.elapsedTime * 1.2) * 0.035;
     }
   });
 
   return (
-    <group position={position}>
+    <group
+      position={position}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
       <group ref={shipRef}>
-        {/* Coque supérieure bleu marine */}
-        <mesh position={[0, 0.16, 0]} castShadow receiveShadow>
-          <boxGeometry args={[2.5, 0.5, 4.6]} />
-          <meshStandardMaterial color="#1e293b" roughness={0.5} />
+        <RoundedBox args={[2.5, 0.46, 4.7]} radius={0.05} smoothness={4} position={[0, 0.14, 0]} castShadow receiveShadow>
+          <meshStandardMaterial color="#1e293b" roughness={0.45} metalness={0.3} />
           <Edges scale={1} color="#0f172a" />
+        </RoundedBox>
+        <mesh position={[0, -0.1, 0]}>
+          <boxGeometry args={[2.52, 0.12, 4.72]} />
+          <meshStandardMaterial color="#9f1239" roughness={0.6} />
         </mesh>
-        {/* Ligne de flottaison rouge brique */}
-        <mesh position={[0, -0.12, 0]}>
-          <boxGeometry args={[2.54, 0.16, 4.64]} />
-          <meshStandardMaterial color="#be123c" roughness={0.6} />
+        <RoundedBox args={[1.8, 0.85, 0.95]} radius={0.03} smoothness={4} position={[0, 0.78, -1.55]} castShadow>
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
+          <Edges scale={1} color="#cbd5e1" />
+        </RoundedBox>
+        <mesh position={[0, 1.02, -1.07]}>
+          <boxGeometry args={[1.6, 0.14, 0.04]} />
+          <meshStandardMaterial color="#0f172a" roughness={0.1} metalness={0.8} />
         </mesh>
-        {/* Château / Passerelle de commandement blanc */}
-        <mesh position={[0, 0.82, -1.5]} castShadow>
-          <boxGeometry args={[1.75, 0.85, 0.95]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.3} />
-          <Edges scale={1} color="#94a3b8" />
-        </mesh>
-        {/* Conteneurs chargés sur le pont */}
-        <mesh position={[-0.45, 0.62, 0.55]} castShadow>
-          <boxGeometry args={[0.8, 0.52, 2.1]} />
+        <RoundedBox args={[0.82, 0.5, 2.2]} radius={0.02} position={[-0.45, 0.6, 0.55]} castShadow>
           <meshStandardMaterial color="#0284c7" roughness={0.4} />
           <Edges scale={1} color="#0369a1" />
-        </mesh>
-        <mesh position={[0.45, 0.62, 0.55]} castShadow>
-          <boxGeometry args={[0.8, 0.52, 2.1]} />
-          <meshStandardMaterial color="#f59e0b" roughness={0.4} />
-          <Edges scale={1} color="#b45309" />
-        </mesh>
+        </RoundedBox>
+        <RoundedBox args={[0.82, 0.5, 2.2]} radius={0.02} position={[0.45, 0.6, 0.55]} castShadow>
+          <meshStandardMaterial color="#0d9488" roughness={0.4} />
+          <Edges scale={1} color="#0f766e" />
+        </RoundedBox>
       </group>
 
-      <Html position={[0, 1.95, 0]} center zIndexRange={[5, 0]}>
-        <div className="px-2.5 py-1 rounded-md bg-white/95 border border-slate-300 text-slate-800 text-[10px] font-mono font-bold uppercase tracking-wider whitespace-nowrap select-none shadow-md flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-sky-500" />
-          <span>WAN // CARGO INGRESS</span>
-        </div>
-      </Html>
+      {(hovered || showAllLabels) && (
+        <Html position={[0, 1.85, 0]} center zIndexRange={[5, 0]}>
+          <div className="px-2.5 py-0.5 rounded-full bg-white/95 border border-slate-200 text-slate-700 text-[9px] font-mono font-semibold uppercase tracking-wider whitespace-nowrap select-none shadow-sm">
+            WAN // INGRESS VESSEL
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
 
-// L'Ingénieur / Chef de Quai IA avec son Casque de Chantier Jaune (Hard Hat)
-function McpHardHatWorker({ targetPos }: { targetPos?: [number, number, number] }) {
-  const workerGroup = useRef<THREE.Group>(null!);
-  const ringRef = useRef<THREE.Mesh>(null!);
-
-  useFrame((state, delta) => {
-    if (!workerGroup.current) return;
-    const t = state.clock.elapsedTime;
-
-    const destX = targetPos ? targetPos[0] + 1.35 : Math.sin(t * 0.5) * 5.2;
-    const destZ = targetPos ? targetPos[2] + 0.85 : 3.3;
-    const walkBob = Math.abs(Math.sin(t * 6)) * 0.08;
-
-    workerGroup.current.position.lerp(new THREE.Vector3(destX, walkBob, destZ), delta * (targetPos ? 6 : 2.2));
-
-    if (ringRef.current) {
-      ringRef.current.rotation.z += delta * 2;
-    }
-  });
-
-  const isWorking = Boolean(targetPos);
-
-  return (
-    <group ref={workerGroup} position={[0, 0, 3.3]}>
-      {/* Torse : Veste Haute Visibilité Orange/Ambre */}
-      <mesh position={[0, 0.55, 0]} castShadow>
-        <capsuleGeometry args={[0.2, 0.34, 12, 24]} />
-        <meshStandardMaterial color="#f97316" roughness={0.35} />
-      </mesh>
-      {/* Bandes réfléchissantes blanches */}
-      <mesh position={[0, 0.56, 0]}>
-        <cylinderGeometry args={[0.21, 0.21, 0.08, 24]} />
-        <meshBasicMaterial color="#ffffff" />
-      </mesh>
-
-      {/* Tête */}
-      <mesh position={[0, 1.0, 0]} castShadow>
-        <sphereGeometry args={[0.17, 24, 24]} />
-        <meshStandardMaterial color="#fed7aa" roughness={0.4} />
-      </mesh>
-
-      {/* CASQUE DE CHANTIER JAUNE (Hard Hat bien net) */}
-      <group position={[0, 1.08, 0]}>
-        <mesh castShadow>
-          <sphereGeometry args={[0.21, 24, 16, 0, Math.PI * 2, 0, Math.PI / 1.8]} />
-          <meshStandardMaterial color="#facc15" roughness={0.2} />
-        </mesh>
-        {/* Visière avant du casque */}
-        <mesh position={[0, -0.02, 0.05]} rotation={[0.12, 0, 0]}>
-          <cylinderGeometry args={[0.24, 0.24, 0.035, 24]} />
-          <meshStandardMaterial color="#eab308" roughness={0.3} />
-        </mesh>
-      </group>
-
-      {/* Anneau d'intervention au sol */}
-      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <ringGeometry args={[0.38, 0.46, 32]} />
-        <meshBasicMaterial color={isWorking ? '#e11d48' : '#0284c7'} side={2} />
-      </mesh>
-
-      <Html position={[0, 1.62, 0]} center zIndexRange={[15, 0]}>
-        <div
-          className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider whitespace-nowrap border select-none pointer-events-none shadow-md transition-all flex items-center gap-1.5 ${
-            isWorking
-              ? 'bg-amber-400 border-slate-900 text-slate-950 scale-105'
-              : 'bg-slate-900 border-amber-400 text-amber-300'
-          }`}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-          <span>{isWorking ? 'MCP // INTERVENTION' : 'MCP // SITE ENGINEER'}</span>
-        </div>
-      </Html>
-    </group>
-  );
-}
-
-export function IsometricScene() {
+export function IsometricScene({
+  showAllLabels = false,
+  cameraPreset = 'iso',
+}: {
+  showAllLabels?: boolean;
+  cameraPreset?: CameraPreset;
+}) {
   const nodes = useTopologyStore((s) => s.nodes) ?? [];
   const selectNode = useTopologyStore((s) => s.selectNode);
   const activeTargetId = useTopologyStore((s) => s.activeTargetId);
   const safeNodes = Array.isArray(nodes) ? nodes : [];
 
+  const spotPosRef = useRef(new THREE.Vector3(0, 0, 3.25));
   const wanPos: [number, number, number] = [-13.8, 0, 0];
 
   const { positionedNodes, platforms, links, wanLinks } = useMemo(() => {
@@ -312,51 +286,40 @@ export function IsometricScene() {
           gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
           camera={{ position: [22, 22, 22], zoom: 34 }}
         >
-          {/* FOND CLAIR LUMINEUX : Bassin portuaire bleu azur doux */}
-          <color attach="background" args={['#dbeafe']} />
-          <fog attach="fog" args={['#dbeafe', 55, 110]} />
+          <color attach="background" args={['#eef2f6']} />
+          <fog attach="fog" args={['#eef2f6', 60, 115]} />
 
           <OrthographicCamera makeDefault position={[22, 22, 22]} zoom={34} near={-100} far={200} />
 
-          <MapControls
-            enableDamping
-            dampingFactor={0.05}
-            minZoom={18}
-            maxZoom={90}
-            maxPolarAngle={Math.PI / 2.35}
-            minPolarAngle={Math.PI / 6}
-          />
+          <CameraRig preset={cameraPreset} spotPosition={spotPosRef} />
 
-          {/* Éclairage Plein Jour (Soleil zénithal clair) */}
-          <ambientLight intensity={1.6} />
-          <directionalLight position={[20, 35, 15]} intensity={1.8} castShadow />
-          <directionalLight position={[-18, 20, -10]} intensity={0.7} color="#ffffff" />
+          <ambientLight intensity={1.7} />
+          <directionalLight position={[22, 38, 16]} intensity={1.6} castShadow />
+          <directionalLight position={[-18, 22, -12]} intensity={0.6} color="#e0f2fe" />
 
-          {/* Grille claire type plan d'architecte (comme NodeVille) */}
           <Grid
             position={[0, -0.32, 0]}
-            args={[100, 100]}
+            args={[110, 110]}
             cellSize={1}
-            cellThickness={0.6}
-            cellColor="#bfdbfe"
+            cellThickness={0.5}
+            cellColor="#dde4ed"
             sectionSize={4}
-            sectionThickness={1.1}
-            sectionColor="#93c5fd"
-            fadeDistance={70}
-            fadeStrength={1}
+            sectionThickness={1}
+            sectionColor="#cbd5e1"
+            fadeDistance={75}
+            fadeStrength={1.2}
           />
 
-          {/* Ombres de contact douces sous les quais */}
           <ContactShadows
             position={[0, -0.31, 0]}
-            opacity={0.35}
+            opacity={0.28}
             scale={45}
-            blur={2.2}
+            blur={2.4}
             far={10}
-            color="#1e3a8a"
+            color="#0f172a"
           />
 
-          <WanCargoVessel position={wanPos} />
+          <WanCargoVessel position={wanPos} showAllLabels={showAllLabels} />
 
           {platforms.map((p) => (
             <SubnetPlatform
@@ -388,10 +351,20 @@ export function IsometricScene() {
             />
           ))}
 
-          <McpHardHatWorker targetPos={targetPos} />
+          {/* Robot Quadrupède Boston Dynamics Spot */}
+          <McpSpotRobot
+            targetPos={targetPos}
+            showAllLabels={showAllLabels}
+            onPositionUpdate={(pos) => spotPosRef.current.copy(pos)}
+          />
 
           {positionedNodes.map(({ node, position }) => (
-            <ContainerCube key={node.id} node={node} position={position} />
+            <ContainerCube
+              key={node.id}
+              node={node}
+              position={position}
+              showAllLabels={showAllLabels}
+            />
           ))}
         </Canvas>
       </CanvasErrorBoundary>
