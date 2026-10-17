@@ -1,4 +1,4 @@
-# French Connection - ATLAS 🌐⚓🤖
+# French Connection - ATLAS
 
 [![Linux](https://img.shields.io/badge/OS-Linux-success?style=flat-square&logo=linux)](https://www.linux.org/)
 [![.NET 8.0](https://img.shields.io/badge/.NET-8.0-blue?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
@@ -12,38 +12,38 @@ Ce système permet de visualiser l'état, l'activité et l'interconnexion de con
 
 ---
 
-## 🔍 Aperçu & Métaphores de l'Infrastructure
+## Aperçu & Métaphores de l'Infrastructure
 
 L'application transpose votre architecture Docker ou Proxmox sous la forme d’un **Terminal Maritime et Logistique** :
-* 🌉 **Les Quais (Docks)** : Représentent vos sous-réseaux (e.g. DMZ, LAN Backend, LAN Data).
-* 📦 **Les Conteneurs Maritimes & ISO Tanks** : Modélisent vos applications et bases de données en temps réel (Maersk Blue pour les apps, White/Teal pour les DB).
-* 🚢 **Le Navire Ingress (WAN Cargo)** : Visualise le trafic internet et les requêtes externes entrantes.
-* 🗼 **La Capitainerie / Phare (HQ / DNS)** : Symbolisent les serveurs d'administration et de résolution DNS.
-* 🤖 **Le Robot Quadrupède Spot-01 (Mcp Agent)** : Un jumeau robotique autonome inspiré de Boston Dynamics qui se déplace en patrouille ou en mission d'intervention/reconfiguration (Allure, Lidar & Scanners fonctionnels).
-* 🚛 **Les AGV Autonomes & Éoliennes** : Matérialisent les pipelines d'intégration (CI/CD) et l'alimentation énergétique (Ressources CPU/RAM) de vos hyperviseurs.
+* **Les Quais (Docks)** : Représentent vos sous-réseaux (e.g. DMZ, LAN Backend, LAN Data).
+* **Les Conteneurs Maritimes & ISO Tanks** : Modélisent vos applications et bases de données en temps réel (Maersk Blue pour les apps, White/Teal pour les DB).
+* **Le Navire Ingress (WAN Cargo)** : Visualise le trafic internet et les requêtes externes entrantes.
+* **La Capitainerie / Phare (HQ / DNS)** : Symbolisent les serveurs d'administration et de résolution DNS.
+* **Le Robot Quadrupède Spot-01 (Mcp Agent)** : Un jumeau robotique autonome inspiré de Boston Dynamics qui se déplace en patrouille ou en mission d'intervention/reconfiguration (Allure, Lidar & Scanners fonctionnels).
+* **Les AGV Autonomes & Éoliennes** : Matérialisent les pipelines d'intégration (CI/CD) et l'alimentation énergétique (Ressources CPU/RAM) de vos hyperviseurs.
 
 ```text
-   [ WAN / Cargo Vessel ] 🛳️
+   [ WAN / Cargo Vessel ] 
             │ (Requêtes)
             ▼
   ┌───────────────────┐
-  │   QUAI 1: DMZ     │ ⚓ (nginx, waf, proxy...)
+  │   QUAI 1: DMZ     │ (nginx, waf, proxy...)
   └─────────┬─────────┘
             │
-     [ Spot-01 MCP ] 🤖 (Inspections & Réparations physiques)
+     [ Spot-01 MCP ] (Inspections & Réparations physiques)
             │
   ┌─────────▼─────────┐
-  │  QUAI 2: BACKEND  │ ⚓ (APIs, legacy workers...)
+  │  QUAI 2: BACKEND  │ (APIs, legacy workers...)
   └─────────┬─────────┘
             │
   ┌─────────▼─────────┐
-  │   QUAI 3: DATA    │ ⚓ (postgres, redis...)
+  │   QUAI 3: DATA    │ (postgres, redis...)
   └───────────────────┘
 ```
 
 ---
 
-## ✨ Fonctionnalités UI & UX (Silicon Valley Standard)
+## Fonctionnalités UI & UX (Silicon Valley Standard)
 
 * **Rendu 3D Isométrique & Performance** : Moteur Three.js optimisé, éclairage studio architectural diurne et ombres de contact fluides.
 * **Camera Preset Rig** : Basculement en un clic entre la vue 3D Isométrique, la vue Plan d'Architecte 2D, et le suivi dynamique en temps réel de Spot-01 (`CAM SPOT-01`).
@@ -53,7 +53,7 @@ L'application transpose votre architecture Docker ou Proxmox sous la forme d’u
 
 ---
 
-## 🛠️ Stack Technique
+## Stack Technique
 
 * **Frontend 3D / HUD** : React 18, `@react-three/fiber`, `@react-three/drei`, TailwindCSS, Lucide Icons, Vite.
 * **Backend / API (Nexus)** : C# .NET 8, WebSockets pour le pushing d’événements en temps réel, client Docker.Net pour l’interface système.
@@ -61,9 +61,9 @@ L'application transpose votre architecture Docker ou Proxmox sous la forme d’u
 
 ---
 
-## 🚀 Installation & Lancement
+## Installation & Lancement
 
-### 📋 Prérequis (Linux / macOS)
+### Prérequis (Linux / macOS)
 
 Avoir d'installé Node.js (v18+), .NET SDK 8.0, et Docker/Docker-compose.
 
@@ -73,7 +73,7 @@ sudo apt update
 sudo apt install -y nodejs npm dotnet-sdk-8.0 docker.io docker-compose
 ```
 
-### 1️⃣ Étape 1 : Lancer le Backend Nexus (API & Monitoring)
+### 1️Étape 1 : Lancer le Backend Nexus (API & Monitoring)
 
 Depuis la racine du dépôt :
 ```bash
@@ -90,7 +90,7 @@ dotnet run --UseMockDocker=true
 dotnet run --UseMockDocker=false
 ```
 
-### 2️⃣ Étape 2 : Lancer l'Interface 3D (Atlas)
+### Étape 2 : Lancer l'Interface 3D (Atlas)
 
 Ouvrir un nouveau terminal :
 ```bash
@@ -104,11 +104,11 @@ npm install
 npm run dev
 ```
 
-👉 Accéder à l'interface sur `http://localhost:5173`.
+Accéder à l'interface sur `http://localhost:5173`.
 
 ---
 
-## ⌨️ Raccourcis Clavier Globaux
+## Raccourcis Clavier Globaux
 
 * **⌘K ou Ctrl+K** : Focus instantané sur la barre d'ordres pour interagir avec le robot Spot et le Nexus.
 * **ESC** : Fermer l'inspecteur de conteneur, désélectionner ou masquer les menus déroulants ouverts.
