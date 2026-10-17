@@ -5,3 +5,4 @@ atlas/dist/
 .env
 start.cmd  
 start.ps1
+apphost
