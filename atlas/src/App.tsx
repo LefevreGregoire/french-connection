@@ -77,6 +77,37 @@ export default function App() {
 
   const latestLog = eventLogs[0];
 
+  const copySreDiagnostic = () => {
+    const errorContainers = nodes.filter((n) => n.alertLevel === VisualAlertLevel.Critical);
+    const recentLogs = eventLogs
+      .slice(0, 8)
+      .map((l) => `[${l.timestamp}] [${l.source}] ${l.message}`)
+      .join('\n');
+
+    const diagnosticPrompt = `Tu es l'agent IA d'astreinte SRE pour "French Connection Atlas" (SRE diagnostic).
+Voici l'état instantané de l'infrastructure d'exploitation :
+- Total Conteneurs : ${nodes.length} Docks
+- Santé : ${runningCount} UP, ${criticalCount} DOWN (En panne d'urgence : ${errorContainers.map((c) => c.name).join(', ') || 'Aucun'})
+- Métriques Globales : Charge CPU ${avgCpu}%, RAM allouée ${totalRam}MB
+
+🚨 ÉLÉMENT EN INCIDENT 🚨
+${
+  errorContainers
+    .map(
+      (c) => `Nom: ${c.name}\nImage:${c.image}\nÉtat: ${c.rawState}\nDerniers logs:\n${c.logs?.join('\n') || 'Pas de logs stderr.'}`,
+    )
+    .join('\n---\n') || 'Aucun incident actif.'
+}
+
+📜 JOURNAL DE BORD DU TERMINAL :
+${recentLogs}
+
+Commente la cause racine, puis formule précisément une commande Atlas "Spot inspect <nom_du_conteneur>" ou "Auto-Heal" pour résoudre l'incident. Explique ton plan d'action !`;
+
+    navigator.clipboard.writeText(diagnosticPrompt);
+    alert('📋 État du terminal et des incidents copié ! Colle ce diagnostic à ton IA dans ton navigateur.');
+  };
+
   const handlePromptSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!promptInput.trim()) return;
@@ -154,6 +185,16 @@ export default function App() {
 
         {/* Droite : Télémétrie + Menu Quais */}
         <div className="relative flex items-center gap-2 pointer-events-auto font-mono text-[11px] tabular-nums">
+          {/* Nouveau bouton de Diagnostics pour Gemini Browser */}
+          <button
+            onClick={copySreDiagnostic}
+            title="Copier le diagnostic SRE pour Gemini dans le presse-papier"
+            className="bg-white/95 hover:bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-full shadow-[0_2px_10px_rgba(15,23,42,0.04)] flex items-center gap-1.5 font-semibold font-mono text-[11px] text-slate-800 cursor-pointer transition pointer-events-auto"
+          >
+            <Terminal className="w-3.5 h-3.5 text-rose-600" strokeWidth={1.75} />
+            <span>diagnostic SRE (Gemini)</span>
+          </button>
+
           <div className="flex items-center gap-3 bg-white/95 backdrop-blur-xl border border-slate-200/80 px-3.5 py-1.5 rounded-full shadow-[0_2px_10px_rgba(15,23,42,0.04)]">
             <div className="flex items-center gap-1.5 pr-3 border-r border-slate-200/80">
               <span
@@ -432,7 +473,7 @@ export default function App() {
 
             <div className="flex justify-between items-center">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">IMAGE</span>
-              <span className="text-slate-700 truncate max-w-[180px] text-[11px]">{selectedNode.image}</span>
+              <span className="text-slate-700 truncate max-w-45 text-[11px]">{selectedNode.image}</span>
             </div>
 
             <div className="pt-2.5 border-t border-slate-100">

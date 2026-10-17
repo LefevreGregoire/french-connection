@@ -15,6 +15,7 @@ import { useTopologyStore, VisualAlertLevel, type ContainerNode } from '../store
 import { ContainerCube } from './ContainerCube';
 import { SubnetPlatform } from './SubnetPlatform';
 import { McpSpotRobot } from './McpSpotRobot';
+import { HarborEnvironment } from './HarborEnvironment';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 
 export type CameraPreset = 'iso' | 'top' | 'spot';
@@ -318,6 +319,9 @@ export function IsometricScene({
             far={10}
             color="#0f172a"
           />
+
+          {/* DÉCOR DE TERMINAL MARITIME SRE */}
+          <HarborEnvironment showAllLabels={showAllLabels} />
 
           <WanCargoVessel position={wanPos} showAllLabels={showAllLabels} />
 
