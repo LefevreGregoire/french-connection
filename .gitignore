@@ -6,3 +6,4 @@ atlas/dist/
 start.cmd  
 start.ps1
 apphost
+**/bin/**/Nexus.Api

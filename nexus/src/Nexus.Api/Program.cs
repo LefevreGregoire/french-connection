@@ -5,10 +5,11 @@ using Nexus.Infrastructure.Docker;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Autorise localhost ET les accès distants (IP Hetzner, VPN Tailscale/WireGuard, Reverse Proxy)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AtlasDev", policy =>
-        policy.WithOrigins("http://localhost:5173")
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials());
@@ -16,17 +17,15 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 
-// Bascule automatique : Simulateur par défaut sur ce poste, ou vrai Docker si UseMockDocker = false
 var useMock = builder.Configuration.GetValue("UseMockDocker", defaultValue: true);
 if (useMock)
 {
-    var simulator = new SimulatedDockerRuntime();
-    builder.Services.AddSingleton(simulator);
-    builder.Services.AddSingleton<IContainerRuntime>(simulator);
+    builder.Services.AddSingleton<IContainerRuntime, SimulatedDockerRuntime>();
 }
 else
 {
-    builder.Services.AddSingleton<IContainerRuntime>(_ => new LocalDockerRuntime());
+    var socketUri = builder.Configuration.GetValue<string>("DockerSocketUri");
+    builder.Services.AddSingleton<IContainerRuntime>(_ => new LocalDockerRuntime(socketUri));
 }
 
 builder.Services.AddSingleton<ITopologyBroadcaster, SignalRTopologyBroadcaster>();
@@ -39,14 +38,10 @@ app.UseCors("AtlasDev");
 
 app.MapGet("/api/topology", (TopologyOrchestrator orchestrator) => orchestrator.CurrentSnapshot);
 
-// Endpoint Chaos Engineering : permet de couper/relancer un conteneur en 1 clic ou via curl
-app.MapPost("/api/sim/toggle/{id}", async (string id, IServiceProvider sp) =>
+// Fonctionne désormais sur le simulateur ET sur le vrai Docker Hetzner !
+app.MapPost("/api/sim/toggle/{id}", async (string id, IContainerRuntime runtime, CancellationToken ct) =>
 {
-    var sim = sp.GetService<SimulatedDockerRuntime>();
-    if (sim is null)
-        return Results.BadRequest("Le mode simulation est désactivé.");
-
-    var updated = await sim.ToggleContainerStateAsync(id);
+    var updated = await runtime.ToggleContainerStateAsync(id, ct);
     return updated is not null ? Results.Ok(updated) : Results.NotFound();
 });
 

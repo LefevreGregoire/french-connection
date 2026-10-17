@@ -8,6 +8,7 @@ public interface IContainerRuntime
 {
     Task<IReadOnlyList<ContainerNode>> GetContainersSnapshotAsync(CancellationToken ct = default);
     Task ListenToEventsAsync(Func<DockerLifecycleEvent, Task> onEvent, CancellationToken ct = default);
+    Task<ContainerNode?> ToggleContainerStateAsync(string id, CancellationToken ct = default);
 }
 
 public interface ITopologyBroadcaster

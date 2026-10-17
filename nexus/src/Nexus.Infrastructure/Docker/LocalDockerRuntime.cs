@@ -59,6 +59,31 @@ public sealed class LocalDockerRuntime : IContainerRuntime, IDisposable
         await _client.System.MonitorEventsAsync(parameters, progress, ct);
     }
 
+    public async Task<DomainNode?> ToggleContainerStateAsync(string id, CancellationToken ct = default)
+    {
+        var containers = await _client.Containers.ListContainersAsync(
+            new ContainersListParameters { All = true }, ct);
+
+        var target = containers.FirstOrDefault(c => c.ID.StartsWith(id, StringComparison.OrdinalIgnoreCase));
+        if (target is null) return null;
+
+        if (target.State == "running")
+        {
+            await _client.Containers.StopContainerAsync(target.ID, new ContainerStopParameters { WaitBeforeKillSeconds = 5 }, ct);
+        }
+        else
+        {
+            await _client.Containers.StartContainerAsync(target.ID, new ContainerStartParameters(), ct);
+        }
+
+        // On relit l'état mis à jour
+        var refreshed = await _client.Containers.ListContainersAsync(
+            new ContainersListParameters { All = true }, ct);
+        var updated = refreshed.FirstOrDefault(c => c.ID == target.ID);
+
+        return updated is not null ? MapToDomain(updated) : null;
+    }
+
     private static DomainNode MapToDomain(ContainerListResponse c)
     {
         var cleanName = c.Names.FirstOrDefault()?.TrimStart('/') ?? c.ID[..12];

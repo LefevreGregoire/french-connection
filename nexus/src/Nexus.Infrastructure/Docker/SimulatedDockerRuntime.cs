@@ -101,8 +101,10 @@ public sealed class SimulatedDockerRuntime : IContainerRuntime
         }
     }
 
-    public async Task<ContainerNode?> ToggleContainerStateAsync(string id)
+    public async Task<ContainerNode?> ToggleContainerStateAsync(string id, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+
         if (!_containers.TryGetValue(id, out var existing))
             return null;
 
